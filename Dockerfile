@@ -5,6 +5,7 @@ COPY --chown=node:node app.js smtp.js ./
 RUN mkdir -p /app/data && chown node:node /app/data
 
 USER node
+ENV HOST=0.0.0.0 PORT=3000
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
