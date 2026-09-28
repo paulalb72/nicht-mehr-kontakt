@@ -7,13 +7,13 @@ Die Bestätigung auf der Webseite ist nötig, weil Mailprogramme und Sicherheits
 ## Coolify einrichten
 
 1. Das öffentliche Repository `https://github.com/paulalb72/nicht-mehr-kontakt` in Coolify als neue **Application** aus einer **Public Repository**-Quelle hinzufügen.
-2. Als **Build Pack: Docker Compose** wählen. **Branch: `main`**, **Base Directory: `/`**, **Docker Compose Location: `compose.yaml`** setzen.
+2. Als **Build Pack: Dockerfile** wählen. **Branch: `main`**, **Base Directory: `/`**, **Dockerfile Location: `Dockerfile`** setzen. Unter **Configuration → General** **Ports Exposes: `3000`** eintragen.
 3. In den Umgebungsvariablen diese fünf Werte als **Runtime-Variablen** eintragen:
 
    | Name | Wert |
    | --- | --- |
    | `PUBLIC_BASE_URL` | Öffentliche HTTPS-Adresse, zum Beispiel `https://abmelden.example.de` (ohne Port und ohne abschließenden Schrägstrich) |
-   | `TOKEN_SECRET` | Einmalig erzeugter, dauerhaft gleicher Schlüssel mit 64 Hex-Zeichen |
+   | `TOKEN_SECRET` | Einmalig erzeugter, dauerhaft gleicher Schlüssel mit 64 Hex-Zeichen; bei einem Wechsel von der alten App denselben Wert übernehmen |
    | `SMTP_USER` | Gmail-Adresse des sendenden Kontos |
    | `SMTP_APP_PASSWORD` | App-Passwort dieses Google-Kontos, ohne Leerzeichen |
    | `NOTIFY_TO` | Gmail-Adresse, an die die Abmeldungen gehen sollen |
@@ -26,14 +26,18 @@ Die Bestätigung auf der Webseite ist nötig, weil Mailprogramme und Sicherheits
 
    Für ein [Google-App-Passwort](https://support.google.com/accounts/answer/185833?hl=de) muss die Bestätigung in zwei Schritten aktiviert sein; bei manchen Konten ist diese Funktion nicht verfügbar. Das normale Google-Passwort nicht eintragen.
 
-4. In der Compose-Anwendung beim Dienst `abmeldung` unter **Domains** die Adresse mit internem Port eintragen, zum Beispiel **`https://abmelden.example.de:3000`**. Nach außen bleibt die URL `https://abmelden.example.de`; `:3000` zeigt Coolify nur den internen Container-Port an. Den DNS-Eintrag der Domain auf den Coolify-Server richten.
-5. **Deploy** ausführen. Die Compose-Datei legt automatisch ein persistentes Volume für `/app/data` an. Im Coolify-Status und unter `/health` prüfen, ob der Dienst läuft. Für das Volume eine Sicherung einrichten.
+4. Unter **Configuration → General → Domains** die Adresse mit internem Port eintragen, zum Beispiel **`https://abmelden.example.de:3000`**. Nach außen bleibt die URL `https://abmelden.example.de`; `:3000` zeigt Coolify nur den internen Container-Port an. Den DNS-Eintrag der Domain auf den Coolify-Server richten.
+5. Unter **Configuration → Persistent Storage → Add → Volume Mount** einen Namen wie `optouts` und **Destination Path: `/app/data`** eintragen. Diesen Schritt vor dem ersten produktiven Deploy erledigen und für das Volume eine Sicherung einrichten.
+6. Unter **Configuration → Advanced** **Consistent Container Names** einschalten, damit während eines Redeploys keine zwei Instanzen gleichzeitig auf die Sperrliste schreiben.
+7. **Deploy** ausführen. Im Deployment-Log prüfen, ob der `Dockerfile` gebaut wurde und die Anwendung auf `0.0.0.0:3000` läuft. Danach `https://abmelden.example.de/health` aufrufen; die Antwort muss `ok` sein.
+
+Wenn die bisherige Compose-Anwendung dieselbe Domain verwendet, ihre Domain-Zuordnung entfernen oder sie stoppen, bevor die neue Anwendung die Domain erhält. Bereits vorhandene `optouts.json`-Daten aus dem alten Volume müssen vor dem Wechsel in das neue Volume übernommen werden.
 
 Nur **eine Instanz** des Dienstes betreiben. Die Datei-Sperrliste unterstützt keine parallelen Schreibzugriffe mehrerer Instanzen.
 
 ## Persönliche Links erzeugen
 
-In Coolify im **Terminal** des laufenden `abmeldung`-Containers:
+In Coolify im **Terminal** des laufenden Containers:
 
 ```sh
 node app.js link empfaenger@example.org
