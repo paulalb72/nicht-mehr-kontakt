@@ -7,7 +7,7 @@ Die Bestätigung auf der Webseite ist nötig, weil Mailprogramme und Sicherheits
 ## Coolify einrichten
 
 1. Dieses Git-Repository in Coolify als neue **Application** aus einem Git-Repository hinzufügen. Für ein privates Repository muss Coolify Zugriff über eine GitHub App oder einen Deploy Key haben.
-2. Als **Build Pack: Docker Compose** wählen. **Branch: `main`**, **Base Directory: `/`**, **Docker Compose Location: `/compose.yaml`** setzen.
+2. Als **Build Pack: Docker Compose** wählen. **Branch: `main`**, **Base Directory: `/`**, **Docker Compose Location: `compose.yaml`** setzen.
 3. In den Umgebungsvariablen diese fünf Werte als **Runtime-Variablen** eintragen:
 
    | Name | Wert |
